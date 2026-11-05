@@ -23,25 +23,35 @@ export async function connectToMongoDB() {
 const connectClinet = await connectToMongoDB()
 const db = connectClinet.db("studio_tech_2026");
 const studiosData = db.collection("studios");
-const myBookinsData = db.collection("my-bookings-data") 
+const myBookinsData = db.collection("my-bookings-data")
 
 
-const verifyAPI = (req, res, next) => {
+
+
+const verifyToken = (req, res, next) => {
     const authHeader = req.headers.authorization;
-    console.log("Cookies from frontend:", req.headers.cookie);
-    if (authHeader !== "user logged in") {
-        return res.status(401).send({ msg: "Unauthorized" })
+    console.log(authHeader);
+    if (!authHeader) {
+        return res.status(401).send({ msg: "Unauthorized" });
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    if (!token) {
+        return res.status(401).send({ msg: "Unauthorized token" });
     }
 
     next();
 }
 
-app.get('/', (req, res) => {
-    res.send(`Hi, This is studio server`)
+
+
+app.get('/studios/:id', verifyToken, async (req, res) => {
+    const id = req.params.id;
+    const studio = await studiosData.findOne({ _id: new ObjectId(id) })
+    console.log(studio);
+    res.send(studio)
 })
-
-
-
 
 app.post('/studios', async (req, res) => {
     const postStudios = req.body;
@@ -54,13 +64,45 @@ app.get('/studios', async (req, res) => {
     res.send(result);
 })
 
-app.get('/studios/:id', verifyAPI, async (req, res) => {
-    const id = req.params.id;
-    const studio = await studiosData.findOne({
-        _id: new ObjectId(id)
-    })
-    res.send(studio)
-})
+
+
+
+app.patch('/studios/:id', async (req, res) => {
+    try {
+        const id = req.params.id;
+        const updatedData = req.body;
+        
+        delete updatedData._id;
+
+        const filter = { _id: new ObjectId(id) };
+        const updateDoc = {
+            $set: updatedData
+        };
+
+        const UpdateStudio = await studiosData.updateOne(filter, updateDoc);
+        console.log("Update Result:", UpdateStudio);
+        res.send(UpdateStudio);
+    } catch (error) {
+        console.error("CRITICAL PATCH ERROR:", error); 
+        res.status(500).send({ error: error.message });
+    }
+});
+
+
+app.delete('/studios/:id', async (req, res) => {
+    try {
+        const id = req.params.id;
+        console.log("Deleting ID:", id); 
+        
+        const result = await studiosData.deleteOne({ _id: new ObjectId(id) });
+        res.send(result);
+    } catch (error) {
+        console.error("Delete error:", error);
+        res.status(500).send({ error: "Failed to delete" });
+    }
+});
+
+
 
 app.get('/categories', async (req, res) => {
     const categories = await studiosData.distinct("category");
@@ -76,7 +118,7 @@ app.post('/my-set-studios', async (req, res) => {
     console.log(result);
 })
 
-app.get('/my-set-studios', async(req, res) => {
+app.get('/my-set-studios', async (req, res) => {
     const result = await myBookinsData.find().toArray();
     res.send(result);
 })
@@ -84,19 +126,12 @@ app.get('/my-set-studios', async(req, res) => {
 
 
 app.get('/my-listings/:email', async (req, res) => {
-    try {
-        const email = req.params.email;
-        const query = { userEmail: email };
-        
-        const result = await myBookinsData.find(query).toArray();
-        res.send(result);
-    } catch (error) {
-        console.error(error);
-        res.status(500).send({ message: "Failed to fetch data" });
-    }
+    const email = req.params.email;
+    const query = { userEmail: email };
+
+    const result = await myBookinsData.find(query).toArray();
+    res.send(result);
 });
-
-
 
 
 
