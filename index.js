@@ -53,7 +53,7 @@ app.get('/studios/:id', verifyToken, async (req, res) => {
     res.send(studio)
 })
 
-app.post('/studios', async (req, res) => {
+app.post('/studios',verifyToken, async (req, res) => {
     const postStudios = req.body;
     const result = await studiosData.insertOne(postStudios);
     res.send(result);
@@ -67,7 +67,7 @@ app.get('/studios', async (req, res) => {
 
 
 
-app.patch('/studios/:id', async (req, res) => {
+app.patch('/studios/:id', verifyToken, async (req, res) => {
     try {
         const id = req.params.id;
         const updatedData = req.body;
@@ -89,7 +89,7 @@ app.patch('/studios/:id', async (req, res) => {
 });
 
 
-app.delete('/studios/:id', async (req, res) => {
+app.delete('/studios/:id', verifyToken, async (req, res) => {
 
         const id = req.params.id;
         console.log("Deleting ID:", id); 
@@ -108,21 +108,22 @@ app.get('/categories', async (req, res) => {
 
 
 
-app.post('/my-set-studios', async (req, res) => {
+
+app.post('/my-set-studios', verifyToken, async (req, res) => {
     const bookingData = req.body;
     const result = await myBookinsData.insertOne(bookingData);
     res.send(result);
     console.log(result);
 })
 
-app.get('/my-set-studios', async (req, res) => {
+app.get('/my-set-studios', verifyToken, async (req, res) => {
     const result = await myBookinsData.find().toArray();
     res.send(result);
 })
 
 
 
-app.get('/my-listings/:email', async (req, res) => {
+app.get('/my-listings/:email', verifyToken, async (req, res) => {
     const email = req.params.email;
     const query = { userEmail: email };
 
