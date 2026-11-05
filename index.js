@@ -90,16 +90,13 @@ app.patch('/studios/:id', async (req, res) => {
 
 
 app.delete('/studios/:id', async (req, res) => {
-    try {
+
         const id = req.params.id;
         console.log("Deleting ID:", id); 
         
         const result = await studiosData.deleteOne({ _id: new ObjectId(id) });
         res.send(result);
-    } catch (error) {
-        console.error("Delete error:", error);
-        res.status(500).send({ error: "Failed to delete" });
-    }
+
 });
 
 
