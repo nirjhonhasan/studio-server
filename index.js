@@ -26,8 +26,6 @@ const studiosData = db.collection("studios");
 const myBookinsData = db.collection("my-bookings-data")
 
 
-
-
 const verifyToken = (req, res, next) => {
     const authHeader = req.headers.authorization;
     console.log(authHeader);
@@ -65,8 +63,6 @@ app.get('/studios', async (req, res) => {
 })
 
 
-
-
 app.patch('/studios/:id', verifyToken, async (req, res) => {
     try {
         const id = req.params.id;
@@ -98,8 +94,6 @@ app.delete('/studios/:id', verifyToken, async (req, res) => {
         res.send(result);
 
 });
-
-
 
 app.get('/categories', async (req, res) => {
     const categories = await studiosData.distinct("category");
