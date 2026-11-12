@@ -2,9 +2,13 @@ import express from 'express'
 import cors from 'cors'
 import { MongoClient, ObjectId } from 'mongodb';
 
+
 import 'dotenv/config';
 const app = express();
-app.use(cors())
+app.use(cors({
+    origin: true,
+    credentials: true
+}));
 app.use(express.json())
 
 const PORT = process.env.PORT || 5000;
@@ -47,7 +51,6 @@ const verifyToken = (req, res, next) => {
 app.get('/studios/:id', verifyToken, async (req, res) => {
     const id = req.params.id;
     const studio = await studiosData.findOne({ _id: new ObjectId(id) })
-    console.log(studio);
     res.send(studio)
 })
 
@@ -76,7 +79,6 @@ app.patch('/studios/:id', verifyToken, async (req, res) => {
         };
 
         const UpdateStudio = await studiosData.updateOne(filter, updateDoc);
-        console.log("Update Result:", UpdateStudio);
         res.send(UpdateStudio);
     } catch (error) {
         console.error("CRITICAL PATCH ERROR:", error); 
@@ -88,7 +90,6 @@ app.patch('/studios/:id', verifyToken, async (req, res) => {
 app.delete('/studios/:id', verifyToken, async (req, res) => {
 
         const id = req.params.id;
-        console.log("Deleting ID:", id); 
         
         const result = await studiosData.deleteOne({ _id: new ObjectId(id) });
         res.send(result);
@@ -102,12 +103,10 @@ app.get('/categories', async (req, res) => {
 
 
 
-
-app.post('/my-set-studios', verifyToken, async (req, res) => {
+app.post('/my-set-studios', async (req, res) => {
     const bookingData = req.body;
     const result = await myBookinsData.insertOne(bookingData);
     res.send(result);
-    console.log(result);
 })
 
 app.get('/my-set-studios', verifyToken, async (req, res) => {
@@ -133,3 +132,5 @@ app.get('/my-listings/:email', verifyToken, async (req, res) => {
 app.listen(PORT, () => {
     console.log(`server is running on ${PORT}`);
 })
+
+export default app
